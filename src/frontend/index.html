@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Professional Chat App</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 1. SIGNUP SCREEN -->
+    <div id="signup-screen" class="overlay">
+        <div class="auth-box">
+            <h2>Create an Account</h2>
+            <form id="signup-form">
+                <input type="text" id="signup-username" placeholder="Username" required autocomplete="off">
+                <input type="email" id="signup-email" placeholder="Email Address" required autocomplete="off">
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+            <p class="auth-switch">Already have an account? <span id="to-login">Log In</span></p>
+        </div>
+    </div>
+
+    <!-- 2. LOGIN SCREEN (Hidden by default via CSS) -->
+    <div id="login-screen" class="overlay hidden">
+        <div class="auth-box">
+            <h2>Welcome Back</h2>
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="Email Address" required autocomplete="off">
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Log In</button>
+            </form>
+            <p class="auth-switch">New here? <span id="to-signup">Create an Account</span></p>
+        </div>
+    </div>
+
+    <!-- 3. MAIN CHAT APPLICATION CONTAINER (Hidden until logged in) -->
+    <div id="app-container" class="hidden">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Online Users</h3>
+                <span id="current-user-badge"></span>
+                <button id="logout-btn">Log Out</button>
+            </div>
+            <ul id="user-list"></ul>
+        </aside>
+
+        <main class="chat-area">
+            <div id="chat-header" class="chat-header">
+                <h3 id="active-chat-target">Select a user from the sidebar to start chatting</h3>
+            </div>
+            
+            <div id="messages-display" class="messages-display"></div>
+
+            <form id="message-form" class="message-form">
+                <input type="text" id="message-input" placeholder="Type a private message..." autocomplete="off" disabled>
+                <button type="submit" id="send-btn" disabled>Send</button>
+            </form>
+        </main>
+    </div>
+
+    <!-- Script Scripts Routing Setup -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
