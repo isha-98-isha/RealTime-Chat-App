@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <!-- 2. LOGIN SCREEN (Hidden by default via CSS) -->
+    <!-- 2. LOGIN SCREEN -->
     <div id="login-screen" class="overlay hidden">
         <div class="auth-box">
             <h2>Welcome Back</h2>
@@ -35,15 +35,23 @@
         </div>
     </div>
 
-    <!-- 3. MAIN CHAT APPLICATION CONTAINER (Hidden until logged in) -->
+    <!-- 3. MAIN CHAT APPLICATION CONTAINER -->
     <div id="app-container" class="hidden">
         <aside class="sidebar">
+            <!-- Header: Restored to simple original text view -->
             <div class="sidebar-header">
                 <h3>Online Users</h3>
-                <span id="current-user-badge"></span>
-                <button id="logout-btn">Log Out</button>
+                <span id="current-user-badge" class="username-display-text"></span>
             </div>
+            
             <ul id="user-list"></ul>
+
+            <!-- NEW: Dedicated Profile Bottom Footer Container -->
+            <div class="sidebar-footer">
+                <button id="open-profile-btn" class="profile-trigger-btn">
+                    Profile
+                </button>
+            </div>
         </aside>
 
         <main class="chat-area">
@@ -55,9 +63,39 @@
 
             <form id="message-form" class="message-form">
                 <input type="text" id="message-input" placeholder="Type a private message..." autocomplete="off" disabled>
-                <button type="submit" id="send-btn" disabled>Send</button>
+                <button type="submit" id="send-btn" disabled>➤</button>
             </form>
         </main>
+    </div>
+
+    <!-- 4. PROFILE PAGE OVERLAY MODAL -->
+    <div id="profile-modal" class="overlay hidden">
+        <div class="auth-box profile-box">
+            <h2>Your Profile</h2>
+            <div class="profile-details">
+                <div class="detail-row">
+                    <strong>Username:</strong> <span id="profile-username-text">-</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Email:</strong> <span id="profile-email-text">-</span>
+                </div>
+            </div>
+            <!-- NEW: Dynamic Theme Picker Layout Section -->
+            <div class="theme-picker-section">
+                <h4>Choose Chat Palette</h4>
+                <div class="palette-options">
+                    <button class="palette-dot palette-slate active-palette" data-theme="slate" title="Classic Slate"></button>
+                    <button class="palette-dot palette-emerald" data-theme="emerald" title="Emerald Mint"></button>
+                    <button class="palette-dot palette-ocean" data-theme="ocean" title="Deep Ocean"></button>
+                    <button class="palette-dot palette-pink" data-theme="soft-pink" title="Soft Pink"></button>
+                    <button class="palette-dot palette-purple" data-theme="midnight-purple" title="Midnight Purple"></button>
+                    <button class="palette-dot palette-orange" data-theme="sunset-orange" title="Sunset Orange"></button>
+                    <button class="palette-dot palette-wood" data-theme="retro-wood" title="Retro Wood"></button>
+                </div>
+            </div>
+            <button id="logout-btn" class="logout-btn">Log Out</button>
+            <button id="close-profile-btn" class="close-btn">Close Profile</button>
+        </div>
     </div>
 
     <!-- Script Scripts Routing Setup -->

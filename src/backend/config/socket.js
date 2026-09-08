@@ -37,6 +37,19 @@ export const initSocket = (server) => {
             }
         });
 
+        // Ensure this event listener is inside your backend socket.js file:
+            socket.on('user_typing', (payload) => {
+                const { targetUsername, isTyping } = payload;
+                const targetSocketId = onlineUsers.get(targetUsername);
+                if (targetSocketId) {
+                    io.to(targetSocketId).emit('user_typing_broadcast', {
+                        sender: socket.username,
+                        isTyping: isTyping
+                    });
+                }
+            });
+
+
         socket.on('disconnect', () => {
             // ONLY remove the user if their current socket matches the one stored
             if (socket.username && onlineUsers.get(socket.username) === socket.id) {

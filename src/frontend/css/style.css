@@ -1,237 +1,325 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, sans-serif;
+/* ==========================================================================
+   🎨 DYNAMIC PALETTES CONFIGURATION (USING COMPACT VARIABLE OVERRIDES)
+   ========================================================================== */
+:root, body[data-theme="slate"] {
+    --bg-app: #f0f2f5;
+    --bg-card: #ffffff;
+    --text-main: #2c3e50;
+    --text-meta: #8899a6;
+    --sidebar-bg: #586d81;
+    --sidebar-header: #22313f;
+    --sidebar-hover: #34495e;
+    --chat-bg: #bbcada;
+    --bubble-sent: #007bff;
+    --bubble-received: #ffffff;
+    --bubble-received-border: #e0e0e0;
+    --bubble-received-text: #333333;
 }
 
-body {
-    background-color: #f0f2f5;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+body[data-theme="emerald"] {
+    --bg-app: #e8f5e9;
+    --bg-card: #ffffff;
+    --text-main: #1b5e20;
+    --text-meta: #757575;
+    --sidebar-bg: #759677;  
+    --sidebar-header: #1c4e20;
+    --sidebar-hover: #2e7d32;
+    --chat-bg: #f1f8e9;
+    --bubble-sent: #0e9b65d5;
+    --bubble-received: #ffffff;
+    --bubble-received-border: #c8e6c9;
+    --bubble-received-text: #1b5e20;
 }
 
-.hidden {
-    display: none !important;
+body[data-theme="ocean"] {
+    --bg-app: #e0f7fa;
+    --bg-card: #ffffff;
+    --text-main: #006064;
+    --text-meta: #607d8b;
+    --sidebar-bg: #77c1c4;
+    --sidebar-header: #00363a;
+    --sidebar-hover: #00838f;
+    --chat-bg: #e0f2f1;
+    --bubble-sent: #096c79;
+    --bubble-received: #ffffff;
+    --bubble-received-border: #b2dfdb;
+    --bubble-received-text: #004d40;
 }
 
-/* --- Auth Panels Structure --- */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #f0f2f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+body[data-theme="soft-pink"] {
+    --bg-app: #fff0f5;
+    --bg-card: #ffffff;
+    --text-main: #c2185b;
+    --text-meta: #f06292;
+    --sidebar-bg: #92576f;
+    --sidebar-header: #db569d;
+    --sidebar-hover: #8b33508f;
+    --chat-bg: #fff0f5;
+    --bubble-sent: #f06292;
+    --bubble-received: #ffffff;
+    --bubble-received-border: #f8bbd0;
+    --bubble-received-text: #c2185b;
 }
 
-.auth-box {
-    background: #ffffff;
-    padding: 2.5rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 100%;
-    max-width: 420px;
+body[data-theme="midnight-purple"] {
+    --bg-app: #433f53;
+    --bg-card: #9893b1;
+    --text-main: #e1bee7;
+    --text-meta: #b388ff;
+    --sidebar-bg: #6f64b1;
+    --sidebar-header: #4f3d81;
+    --sidebar-hover: #322b58;
+    --chat-bg: #b9b7c5;
+    --bubble-sent: #7c4dff;
+    --bubble-received: #211a43;
+    --bubble-received-border: #312663;
+    --bubble-received-text: #e1bee7;
 }
 
-.auth-box h2 {
-    color: #1a1a1a;
-    margin-bottom: 1.5rem;
+body[data-theme="sunset-orange"] {
+    --bg-app: #fdf6f0;
+    --bg-card: #ffffff;
+    --text-main: #af4c25;
+    --text-meta: #d46b38;
+    --sidebar-bg: #d89b83;
+    --sidebar-header: #aa4f2c;
+    --sidebar-hover: #b1603f;
+    --chat-bg: #fffbf7;
+    --bubble-sent: #e06d3b;
+    --bubble-received: #ffffff;
+    --bubble-received-border: #f7dcd0;
+    --bubble-received-text: #af4c25;
 }
 
-.auth-box input {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    border: 1px solid #cccccc;
-    border-radius: 5px;
-    margin-bottom: 1rem;
-    font-size: 1rem;
-    outline: none;
+body[data-theme="retro-wood"] {
+    --bg-app: #f4f3ef;
+    --bg-card: #ffffff;
+    --text-main: #3d405b;
+    --text-meta: #e07a5f;
+    --sidebar-bg: #d1cfb7;
+    --sidebar-header: rgb(199, 129, 38);
+    --sidebar-hover: #916d43;
+    --chat-bg: #f0d7b0;
+    --bubble-sent: #e07a5f;
+    --bubble-received: #ffffff;
+    --bubble-received-border: #f2cc8f;
+    --bubble-received-text: #3d405b;
+}
+/* ==========================================================================
+   LAYOUT STRUCTURE SETTINGS
+   ========================================================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+body { background-color: var(--bg-app); height: 100vh; display: flex; justify-content: center; align-items: center; transition: background 0.3s; }
+.hidden { display: none !important; }
+
+/* --- Auth Panels --- */
+.overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: var(--bg-app); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.auth-box { background: var(--bg-card); padding: 2.5rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 420px; }
+.auth-box h2 { color: #1a1a1a; margin-bottom: 1.5rem; }
+.auth-box input { width: 100%; padding: 0.8rem 1rem; border: 1px solid #cccccc; border-radius: 5px; margin-bottom: 1rem; font-size: 1rem; outline: none; }
+.auth-box button { width: 100%; padding: 0.8rem; background-color: var(--bubble-sent); color: white; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: 600; }
+.auth-switch { margin-top: 1.2rem; font-size: 0.9rem; color: #666; }
+.auth-switch span { color: var(--bubble-sent); cursor: pointer; font-weight: 600; }
+
+/* --- Main Layout App Framework --- */
+#app-container { display: flex; width: 90vw; height: 85vh; background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); overflow: hidden; }
+
+/* --- Sidebar --- */
+.sidebar { width: 30%; background-color: var(--sidebar-bg); color: #ffffff; display: flex; flex-direction: column; transition: background 0.3s; }
+.sidebar-header { padding: 1.5rem; background-color: var(--sidebar-header); border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-header h3 { font-size: 1.2rem; }
+.username-display-text { font-size: 0.95rem; color: rgba(255,255,255,0.7); font-weight: 500; display: block; margin-top: 0.2rem; }
+#user-list { list-style: none; overflow-y: auto; flex-grow: 1; }
+#user-list li { padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-weight: 500; transition: background 0.2s; }
+#user-list li:hover { background-color: var(--sidebar-hover); }
+#user-list li.active-user { background-color: var(--sidebar-hover); border-left: 5px solid var(--bubble-sent); }
+.no-users { padding: 1.5rem; text-align: center; color: rgba(255,255,255,0.4); font-style: italic; }
+
+/* --- Sidebar Profile Footer --- */
+.sidebar-footer { padding: 1rem; background-color: var(--sidebar-header); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; }
+.profile-trigger-btn { width: 100%; padding: 0.7rem; background-color: var(--sidebar-hover); color: #ffffff; border: none; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer; }
+
+/* --- New Profile Box & Theme Picker Layout Styling --- */
+.profile-box { border-top: 5px solid var(--bubble-sent); }
+.profile-details { text-align: left; margin-top: 1rem; background-color: #f8f9fa; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0; }
+.detail-row { font-size: 1.05rem; color: #333333; margin-bottom: 0.8rem; }
+.detail-row strong { color: #2c3e50; display: inline-block; width: 100px; }
+
+.theme-picker-section { 
+    margin: 1.2rem 0; 
+    text-align: left; 
 }
 
-.auth-box button {
-    width: 100%;
-    padding: 0.8rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.2s;
+.theme-picker-section h4 { 
+    font-size: 1.05rem; 
+    color: #2c3e50; 
+    margin-bottom: 0.8rem; 
 }
 
-.auth-box button:hover {
-    background-color: #0056b3;
+/* Dynamic space-efficient flex rows with automatic wrapping */
+.palette-options {
+    display: flex !important;
+    gap: 0.6rem !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    padding: 0.5rem 0 !important;
 }
 
-.auth-switch {
-    margin-top: 1.2rem;
-    font-size: 0.9rem;
-    color: #666;
+/* Symmetrical rounded grid layout chips that strictly respect set widths */
+button.palette-dot {
+    width: 44px !important;
+    height: 32px !important;
+    max-width: 44px !important;
+    max-height: 32px !important;
+    border-radius: 6px !important;
+    border: 2px solid transparent !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06) !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    outline: none !important;
+    flex-shrink: 0 !important; /* Prevents rows from crushing block elements horizontally */
+    display: block !important;
 }
 
-.auth-switch span {
-    color: #007bff;
-    cursor: pointer;
-    font-weight: 600;
+button.palette-dot:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12) !important;
 }
 
-.auth-switch span:hover {
-    text-decoration: underline;
+button.palette-dot.active-palette {
+    border-color: #1a1a1a !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
 }
 
-/* --- Main Layout App Container --- */
-#app-container {
-    display: flex;
-    width: 90vw;
-    height: 85vh;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+/* ==========================================================================
+   💥 BULLETPROOF ABSOLUTE COLOR PREVIEWS FOR CHIPS
+   ========================================================================== */
+button.palette-dot.palette-slate { background: linear-gradient(135deg, #2c3e50 50%, #007bff 50%) !important; }
+button.palette-dot.palette-emerald { background: linear-gradient(135deg, #1b5e20 50%, #2ecc71 50%) !important; }
+button.palette-dot.palette-ocean { background: linear-gradient(135deg, #006064 50%, #00bcd4 50%) !important; }
+button.palette-dot.palette-pink { background: linear-gradient(135deg, #880e4f 50%, #f48fb1 50%) !important; }
+button.palette-dot.palette-purple { background: linear-gradient(135deg, #16122c 50%, #7c4dff 50%) !important; }
+button.palette-dot.palette-orange { background: linear-gradient(135deg, #af4c25 50%, #e06d3b 50%) !important; }
+button.palette-dot.palette-wood { background: linear-gradient(135deg, #3d405b 50%, #e7b351ec 50%) !important; }
+
+/* --- Bottom UI buttons structural balance overrides --- */
+.logout-btn { background-color: #e74c3c !important; margin-bottom: 0.8rem; width: 100% !important; padding: 0.8rem !important; color: white !important; border: none !important; border-radius: 5px !important; font-weight: 600 !important; cursor: pointer !important; }
+.logout-btn:hover { background-color: #c0392b !important; }
+.close-btn { width: 100% !important; padding: 0.8rem !important; background-color: #7f8c8d !important; color: white !important; border: none !important; border-radius: 5px !important; font-weight: 600 !important; cursor: pointer !important; }
+.close-btn:hover { background-color: #95a5a6 !important; }
+
+/* --- Chat Section UI inputs fixes --- */
+.chat-area { width: 70%; display: flex; flex-direction: column; background-color: var(--chat-bg); transition: background 0.3s; }
+.chat-header { padding: 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--bubble-received-border); }
+.messages-display { flex-grow: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+.msg-bubble { max-width: 65%; padding: 0.8rem 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.msg-sent { background-color: var(--bubble-sent); color: white; align-self: flex-end; }
+.msg-received { background-color: var(--bubble-received); color: var(--bubble-received-text); border: 1px solid var(--bubble-received-border); align-self: flex-start; }
+.msg-time { font-size: 0.7rem; text-align: right; margin-top: 0.3rem; opacity: 0.7; }
+.message-form { padding: 1rem 1.5rem; background: var(--bg-card); border-top: 1px solid var(--bubble-received-border); display: flex; gap: 1rem; align-items: center; }
+.message-form input { flex-grow: 1; padding: 0.8rem 1rem; border: 1px solid var(--bubble-received-border); border-radius: 20px; outline: none; background: #fafafa; }
+.message-form button { width: 42px; height: 42px; background-color: var(--bubble-sent); border: none; border-radius: 50%; font-size: 1.15rem; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background 0.2s, transform 0.1s; flex-shrink: 0; }
+.message-form button:hover:not(:disabled) { transform: scale(1.05); }
+.message-form button:disabled { background-color: #cccccc; cursor: not-allowed; transform: none; }
+
+/* --- Symmetrical Chat Bubbles --- */
+.msg-bubble { max-width: 65%; padding: 0.8rem 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.msg-sent { background-color: var(--bubble-sent); color: white; align-self: flex-end; }
+.msg-received { background-color: var(--bubble-received); color: var(--bubble-received-text); border: 1px solid var(--bubble-received-border); align-self: flex-start; }
+.msg-time { font-size: 0.7rem; text-align: right; margin-top: 0.3rem; opacity: 0.7; }
+
+/* --- Input Bar Form Layout --- */
+.message-form { padding: 1rem 1.5rem; background: var(--bg-card); border-top: 1px solid var(--bubble-received-border); display: flex; gap: 1rem; align-items: center; }
+.message-form input { flex-grow: 1; padding: 0.8rem 1rem; border: 1px solid var(--bubble-received-border); border-radius: 20px; outline: none; background: #fafafa; }
+.message-form button { width: 42px; height: 42px; background-color: var(--bubble-sent); border: none; border-radius: 50%; font-size: 1.15rem; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background 0.2s, transform 0.1s; flex-shrink: 0; }
+.message-form button:hover:not(:disabled) { transform: scale(1.05); }
+.message-form button:disabled { background-color: #cccccc; cursor: not-allowed; transform: none; }
+/* ==========================================================================
+   ✨ TYPING INDICATOR VISUAL LAYER FIXES
+   ========================================================================== */
+.typing-indicator {
+    font-size: 0.85rem !important;
+    font-style: italic !important;
+    font-weight: 600 !important;
+    color: var(--text-meta) !important; /* Forces the text to match your palette sub-color text */
+    margin-top: 0.3rem !important;
+    display: block !important;
+    animation: pulseFade 1.2s infinite ease-in-out;
 }
 
-.sidebar {
-    width: 30%;
-    background-color: #2c3e50;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
+/* Adds a sleek breathing animation so typing status feels active */
+@keyframes pulseFade {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
 }
 
-.sidebar-header {
-    padding: 1.2rem;
-    background-color: #22313f;
-    border-bottom: 1px solid #34495e;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+/* ==========================================================================
+   🚨 UNREAD MESSAGE BADGE POSITIONING & FLEX ALIGNMENT
+   ========================================================================== */
+/* Ensures the sidebar user row acts as a parent flex container for text and badges */
+#user-list li.user-item-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
 }
 
-#logout-btn {
-    padding: 0.4rem;
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
+/* Clean, modern absolute-shaped circular badge design layout */
+.unread-count-badge {
+    background-color: #e74c3c !important; /* High contrast vibrant red notice badge ring */
+    color: #ffffff !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 0.15rem 0.45rem !important;
+    border-radius: 12px !important;
+    min-width: 20px !important;
+    text-align: center !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    flex-shrink: 0 !important;
 }
+@media (max-width: 768px) {
+    /* Collapse the main screen into a vertical column stacking format */
+    #app-container {
+        flex-direction: column !important;
+        width: 95vw !important;
+        height: 92vh !important;
+    }
 
-#logout-btn:hover {
-    background-color: #c0392b;
-}
+    /* Convert sidebar into a shorter top row banner panel */
+    .sidebar {
+        width: 100% !important;
+        height: 25% !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color);
+    }
 
-#user-list {
-    list-style: none;
-    overflow-y: auto;
-    flex-grow: 1;
-}
+    /* Allow user rows to align horizontally across the top panel on mobile layout frames */
+    #user-list {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+    }
 
-#user-list li {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid #34495e;
-    cursor: pointer;
-    font-weight: 500;
-}
+    .user-item-row {
+        padding: 0.8rem 1rem !important;
+        border-bottom: none !important;
+        border-right: 1px solid var(--border-color);
+        white-space: nowrap !important;
+        flex-direction: row !important;
+        gap: 0.5rem;
+    }
 
-#user-list li:hover {
-    background-color: #34495e;
-}
+    /* Allow the bottom profile selector button panel block to stay compact */
+    .sidebar-footer {
+        padding: 0.5rem !important;
+    }
 
-#user-list li.active-user {
-    background-color: #007bff;
-}
-
-.no-users {
-    padding: 1.5rem;
-    text-align: center;
-    color: #bdc3c7;
-    font-style: italic;
-}
-
-.chat-area {
-    width: 70%;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8f9fa;
-}
-
-.chat-header {
-    padding: 1.5rem;
-    background: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.messages-display {
-    flex-grow: 1;
-    padding: 1.5rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.msg-bubble {
-    max-width: 65%;
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.msg-sent {
-    background-color: #007bff;
-    color: white;
-    align-self: flex-end;
-}
-
-.msg-received {
-    background-color: #ffffff;
-    color: #333;
-    align-self: flex-start;
-    border: 1px solid #e0e0e0;
-}
-
-.msg-time {
-    font-size: 0.7rem;
-    text-align: right;
-    margin-top: 0.3rem;
-    opacity: 0.7;
-}
-
-.message-form {
-    padding: 1rem 1.5rem;
-    background: #ffffff;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    gap: 1rem;
-}
-
-.message-form input {
-    flex-grow: 1;
-    padding: 0.8rem 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 20px;
-    outline: none;
-}
-
-.message-form button {
-    padding: 0.8rem 1.5rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-}
-.message-form button:hover {
-    background-color: #0056b3;
+    /* Expand the private messaging room conversation canvas block area */
+    .chat-area {
+        width: 100% !important;
+        height: 75% !important;
+    }
 }

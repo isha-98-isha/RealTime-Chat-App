@@ -46,17 +46,14 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
 
     const users = JSON.parse(localStorage.getItem('registered_users')) || [];
 
-    // Search profile verification matching
     const validUser = users.find(user => user.email === email && user.password === password);
 
     if (!validUser) {
         return alert("Invalid email address or incorrect password!");
     }
 
-    // Establish persistent active browser token session
     localStorage.setItem('active_session_user', validUser.username);
     
-    // Safely verify function exists in memory before execution
     if (typeof initChatApplication === "function") {
         initChatApplication(validUser.username);
     } else {
@@ -64,15 +61,62 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
     }
 });
 
-// --- Wait for everything to load completely before checking old sessions ---
+// --- FIXED: Updated target to listen to the bottom profile footer button click ---
+document.getElementById('open-profile-btn').addEventListener('click', () => {
+    const activeUsername = localStorage.getItem('active_session_user');
+    const users = JSON.parse(localStorage.getItem('registered_users')) || [];
+    
+    const accountData = users.find(u => u.username === activeUsername);
+
+    if (accountData) {
+        document.getElementById('profile-username-text').textContent = `@${accountData.username}`;
+        document.getElementById('profile-email-text').textContent = accountData.email;
+
+        // Highlight the user's previously saved theme inside the picker
+        const savedTheme = localStorage.getItem('custom_chat_theme') || 'slate';
+        highlightSelectedPalette(savedTheme);
+
+        document.getElementById('profile-modal').classList.remove('hidden');
+    }
+});
+
+document.getElementById('close-profile-btn').addEventListener('click', () => {
+    document.getElementById('profile-modal').classList.add('hidden');
+});
+
+// --- NEW: Theme Palette Selection Click Handlers ---
+document.querySelectorAll('.palette-dot').forEach(dot => {
+    dot.addEventListener('click', (e) => {
+        const targetTheme = e.target.getAttribute('data-theme');
+        
+        // Apply theme to body HTML node
+        document.body.setAttribute('data-theme', targetTheme);
+        // Persist theme to localStorage
+        localStorage.setItem('custom_chat_theme', targetTheme);
+        
+        highlightSelectedPalette(targetTheme);
+    });
+});
+
+function highlightSelectedPalette(themeName) {
+    document.querySelectorAll('.palette-dot').forEach(dot => {
+        dot.classList.toggle('active-palette', dot.getAttribute('data-theme') === themeName);
+    });
+}
+
+// --- Initialize saved user data and themes on load ---
 window.addEventListener('load', () => {
+    // 1. Restore Custom Palette Theme
+    const savedTheme = localStorage.getItem('custom_chat_theme') || 'slate';
+    document.body.setAttribute('data-theme', savedTheme);
+
+    // 2. Check Session
     const sessionUser = localStorage.getItem('active_session_user');
     if (sessionUser && typeof initChatApplication === "function") {
         initChatApplication(sessionUser);
     }
 });
 
-// --- Log Out Event Handler Handling ---
 document.getElementById('logout-btn').addEventListener('click', () => {
     localStorage.removeItem('active_session_user');
     window.location.reload(); 
