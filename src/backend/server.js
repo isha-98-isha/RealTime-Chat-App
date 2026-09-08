@@ -18,7 +18,9 @@ app.use(express.static(frontendPath));
 // Initialize Socket.IO configuration
 initSocket(server);
 
+// Change this line at the bottom of your server.js:
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Chat server running professionally at http://localhost:${PORT}`);
+server.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Chat server running professionally at port ${PORT}`);
 });
+
