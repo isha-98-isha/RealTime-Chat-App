@@ -63,21 +63,22 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
 
 // --- FIXED: Updated target to listen to the bottom profile footer button click ---
 document.getElementById('open-profile-btn').addEventListener('click', () => {
-    const activeUsername = localStorage.getItem('active_session_user');
+    const activeUsername = localStorage.getItem('active_session_user') || window.myUsername;
     const users = JSON.parse(localStorage.getItem('registered_users')) || [];
     
-    const accountData = users.find(u => u.username === activeUsername);
+    const accountData = users.find(u => u.username === activeUsername)
+        || users.find(u => u.username.toLowerCase() === activeUsername?.toLowerCase());
 
-    if (accountData) {
-        document.getElementById('profile-username-text').textContent = `@${accountData.username}`;
-        document.getElementById('profile-email-text').textContent = accountData.email;
+    if (!accountData) return;
 
-        // Highlight the user's previously saved theme inside the picker
-        const savedTheme = localStorage.getItem('custom_chat_theme') || 'slate';
-        highlightSelectedPalette(savedTheme);
+    document.getElementById('profile-username-text').textContent = `@${accountData.username}`;
+    document.getElementById('profile-email-text').textContent = accountData.email;
 
-        document.getElementById('profile-modal').classList.remove('hidden');
-    }
+    // Highlight the user's previously saved theme inside the picker
+    const savedTheme = localStorage.getItem('custom_chat_theme') || 'slate';
+    highlightSelectedPalette(savedTheme);
+
+    document.getElementById('profile-modal').classList.remove('hidden');
 });
 
 document.getElementById('close-profile-btn').addEventListener('click', () => {
