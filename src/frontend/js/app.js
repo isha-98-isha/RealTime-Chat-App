@@ -27,7 +27,11 @@ const CHAT_HISTORY_STORAGE_KEY = 'chat_histories_by_owner_v2';
 const UNREAD_COUNT_STORAGE_KEY = 'unread_counts_by_owner_v2';
 let chatHistories = {};
 let unreadCounts = {};
-let cachedOnlineUsers = []; // NEW: Cache online users locally to repaint badges correctly
+let cachedGlobalRoster = [];
+
+function getRoomKey(userA, userB) {
+    return [userA, userB].sort().join('_and_');
+}
 
 function readStoredObject(key) {
     try {
@@ -91,12 +95,13 @@ socket.on('connect', () => {
 });
 
 // --- Real-Time Sidebar Updates ---
-socket.on('update_user_list', (users) => {
-    cachedOnlineUsers = users; // Update active user cache
+socket.on('update_global_roster', (roster) => {
+    cachedGlobalRoster = roster;
 
     // An offline user cannot still be typing. This also clears a stale indicator
     // if their browser closes before its final typing event reaches us.
-    if (currentChatTarget && !cachedOnlineUsers.includes(currentChatTarget)) {
+    const currentTargetStatus = cachedGlobalRoster.find(user => user.username === currentChatTarget);
+    if (currentChatTarget && currentTargetStatus && !currentTargetStatus.isOnline) {
         hideTypingIndicator();
     }
 
@@ -106,22 +111,31 @@ socket.on('update_user_list', (users) => {
 // NEW: Separated layout rendering function to clean up and inject unread notification badges
 function renderUserList() {
     userList.innerHTML = ""; 
-    const otherUsers = cachedOnlineUsers.filter(user => user !== myUsername);
+    const otherUsers = cachedGlobalRoster.filter(user => user.username !== myUsername);
 
     if (otherUsers.length === 0) {
-        userList.innerHTML = `<li class="no-users">No one else is online</li>`;
+        userList.innerHTML = `<li class="no-users">No other users registered</li>`;
         return;
     }
 
-    otherUsers.forEach(username => {
+    otherUsers.forEach(user => {
+        const { username, isOnline } = user;
         const li = document.createElement('li');
         li.className = 'user-item-row';
         if (username === currentChatTarget) li.classList.add('active-user');
-        
-        // Create user text name block nodes
+
+        const userDetails = document.createElement('div');
+        userDetails.className = 'user-details';
+
         const nameSpan = document.createElement('span');
         nameSpan.textContent = username;
-        li.appendChild(nameSpan);
+        userDetails.appendChild(nameSpan);
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = `user-status ${isOnline ? 'online' : 'offline'}`;
+        statusSpan.textContent = isOnline ? '● Online' : '○ Offline';
+        userDetails.appendChild(statusSpan);
+        li.appendChild(userDetails);
 
         // Inject dynamic numeric badge element if there are unread messages from this user
         const unreadCount = unreadCounts[username] || 0;
@@ -242,8 +256,9 @@ messageForm.addEventListener('submit', (e) => {
 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    if (!chatHistories[currentChatTarget]) chatHistories[currentChatTarget] = [];
-    chatHistories[currentChatTarget].push({ sender: myUsername, message, timestamp });
+    const roomKey = getRoomKey(myUsername, currentChatTarget);
+    if (!chatHistories[roomKey]) chatHistories[roomKey] = [];
+    chatHistories[roomKey].push({ sender: myUsername, message, timestamp });
 
     saveChatHistories();
 
@@ -260,8 +275,9 @@ messageForm.addEventListener('submit', (e) => {
 socket.on('receive_message', (payload) => {
     const { sender, message, timestamp } = payload;
 
-    if (!chatHistories[sender]) chatHistories[sender] = [];
-    chatHistories[sender].push({ sender, message, timestamp });
+    const roomKey = getRoomKey(myUsername, sender);
+    if (!chatHistories[roomKey]) chatHistories[roomKey] = [];
+    chatHistories[roomKey].push({ sender, message, timestamp });
 
     saveChatHistories();
 
@@ -282,9 +298,10 @@ socket.on('receive_message', (payload) => {
 // --- Render Text Bubbles ---
 function renderMessages() {
     messagesDisplay.innerHTML = "";
-    if (!currentChatTarget || !chatHistories[currentChatTarget]) return;
+    const roomKey = currentChatTarget && getRoomKey(myUsername, currentChatTarget);
+    if (!roomKey || !chatHistories[roomKey]) return;
 
-    chatHistories[currentChatTarget].forEach(chat => {
+    chatHistories[roomKey].forEach(chat => {
         const bubble = document.createElement('div');
         const isMe = chat.sender === myUsername;
         bubble.className = `msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
