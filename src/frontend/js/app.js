@@ -18,14 +18,53 @@ const currentUserBadge = document.getElementById('current-user-badge');
 let myUsername = "";
 let currentChatTarget = null;
 let typingTimeout = null;
+let typingTarget = null;
+const TYPING_IDLE_DELAY_MS = 5000;
 
-// Roster memory mappings
-const chatHistories = JSON.parse(localStorage.getItem('chat_histories')) || {};
-const unreadCounts = JSON.parse(localStorage.getItem('unread_counts')) || {};// NEW: Tracker structure map for notifications: { "Bob": 2 }
+// Conversation data belongs to the signed-in account, not just the chat partner.
+// The old storage key was shared by every account in this browser profile.
+const CHAT_HISTORY_STORAGE_KEY = 'chat_histories_by_owner_v2';
+const UNREAD_COUNT_STORAGE_KEY = 'unread_counts_by_owner_v2';
+let chatHistories = {};
+let unreadCounts = {};
 let cachedOnlineUsers = []; // NEW: Cache online users locally to repaint badges correctly
+
+function readStoredObject(key) {
+    try {
+        const value = JSON.parse(localStorage.getItem(key));
+        return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    } catch {
+        return {};
+    }
+}
+
+function loadAccountChatData(username) {
+    const allHistories = readStoredObject(CHAT_HISTORY_STORAGE_KEY);
+    const allUnreadCounts = readStoredObject(UNREAD_COUNT_STORAGE_KEY);
+
+    chatHistories = allHistories[username] && typeof allHistories[username] === 'object'
+        ? allHistories[username]
+        : {};
+    unreadCounts = allUnreadCounts[username] && typeof allUnreadCounts[username] === 'object'
+        ? allUnreadCounts[username]
+        : {};
+}
+
+function saveChatHistories() {
+    const allHistories = readStoredObject(CHAT_HISTORY_STORAGE_KEY);
+    allHistories[myUsername] = chatHistories;
+    localStorage.setItem(CHAT_HISTORY_STORAGE_KEY, JSON.stringify(allHistories));
+}
+
+function saveUnreadCounts() {
+    const allUnreadCounts = readStoredObject(UNREAD_COUNT_STORAGE_KEY);
+    allUnreadCounts[myUsername] = unreadCounts;
+    localStorage.setItem(UNREAD_COUNT_STORAGE_KEY, JSON.stringify(allUnreadCounts));
+}
 
 function initChatApplication(username) {
     myUsername = username;
+    loadAccountChatData(myUsername);
     currentUserBadge.textContent = `@${myUsername}`;
     
     // Connect to server
@@ -54,6 +93,13 @@ socket.on('connect', () => {
 // --- Real-Time Sidebar Updates ---
 socket.on('update_user_list', (users) => {
     cachedOnlineUsers = users; // Update active user cache
+
+    // An offline user cannot still be typing. This also clears a stale indicator
+    // if their browser closes before its final typing event reaches us.
+    if (currentChatTarget && !cachedOnlineUsers.includes(currentChatTarget)) {
+        hideTypingIndicator();
+    }
+
     renderUserList();
 });
 
@@ -90,7 +136,7 @@ function renderUserList() {
     unreadCounts[username] = 0; 
     
     // NEW: Save the cleared state to localStorage so it stays 0 after refreshing
-    localStorage.setItem('unread_counts', JSON.stringify(unreadCounts));
+    saveUnreadCounts();
     
     switchActiveChat(username);
     renderUserList(); 
@@ -102,12 +148,17 @@ function renderUserList() {
 
 // --- Switching Chat Windows ---
 function switchActiveChat(targetUser) {
+    stopTyping();
     currentChatTarget = targetUser;
     activeChatTarget.textContent = `Chatting with: ${targetUser}`;
     
     // Clear display status values cleanly
     const indicator = document.getElementById('typing-indicator-bar');
     if (indicator) indicator.classList.add('hidden');
+
+    // Typing events are transient. Ask the server for the current state in case
+    // this chat was opened after the other user started typing.
+    socket.emit('typing_status_request', { targetUsername: targetUser });
 
     messageInput.disabled = false;
     sendBtn.disabled = false;
@@ -121,18 +172,48 @@ function switchActiveChat(targetUser) {
     renderMessages();
 }
 
-// --- NEW: Typing Event Input Listeners ---
+function stopTyping(targetUsername = typingTarget) {
+    clearTimeout(typingTimeout);
+    typingTimeout = null;
+
+    if (targetUsername) {
+        socket.emit('user_typing', { targetUsername, isTyping: false });
+    }
+
+    if (!targetUsername || targetUsername === typingTarget) {
+        typingTarget = null;
+    }
+}
+
+function hideTypingIndicator() {
+    document.getElementById('typing-indicator-bar')?.classList.add('hidden');
+}
+
+// --- Typing Event Input Listeners ---
 messageInput.addEventListener('input', () => {
     if (!currentChatTarget) return;
 
-    // Send a real-time keystroke signal to backend
-    socket.emit('user_typing', { targetUsername: currentChatTarget, isTyping: true });
+    if (!messageInput.value.trim()) {
+        stopTyping();
+        return;
+    }
 
-    // Debounce listener clear out: if user remains silent for 1.5 seconds, notify server typing has stopped
+    if (typingTarget && typingTarget !== currentChatTarget) {
+        stopTyping();
+    }
+    typingTarget = currentChatTarget;
+
+    // Send a real-time keystroke signal to backend
+    socket.emit('user_typing', { targetUsername: typingTarget, isTyping: true });
+
+    // If the user remains silent for five seconds, notify the recipient that typing stopped.
     clearTimeout(typingTimeout);
+    const targetAtInput = typingTarget;
     typingTimeout = setTimeout(() => {
-        socket.emit('user_typing', { targetUsername: currentChatTarget, isTyping: false });
-    }, 1500);
+        if (typingTarget === targetAtInput) {
+            stopTyping(targetAtInput);
+        }
+    }, TYPING_IDLE_DELAY_MS);
 });
 
 // NEW: Handle incoming typing status broadcasts from active chat partner
@@ -145,7 +226,7 @@ socket.on('user_typing_broadcast', (payload) => {
             indicator.textContent = `${sender} is typing...`;
             indicator.classList.remove('hidden');
         } else {
-            indicator.classList.add('hidden');
+            hideTypingIndicator();
         }
     }
 });
@@ -156,16 +237,15 @@ messageForm.addEventListener('submit', (e) => {
     const message = messageInput.value.trim();
     if (!message || !currentChatTarget) return;
 
-    // Instantly reset typing indicators on submit actions
-    clearTimeout(typingTimeout);
-    socket.emit('user_typing', { targetUsername: currentChatTarget, isTyping: false });
+    // Instantly notify the recipient that typing has ended.
+    stopTyping();
 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     if (!chatHistories[currentChatTarget]) chatHistories[currentChatTarget] = [];
     chatHistories[currentChatTarget].push({ sender: myUsername, message, timestamp });
 
-    localStorage.setItem('chat_histories', JSON.stringify(chatHistories));
+    saveChatHistories();
 
     socket.emit('private_message', {
         targetUsername: currentChatTarget,
@@ -183,16 +263,18 @@ socket.on('receive_message', (payload) => {
     if (!chatHistories[sender]) chatHistories[sender] = [];
     chatHistories[sender].push({ sender, message, timestamp });
 
-    localStorage.setItem('chat_histories', JSON.stringify(chatHistories));
+    saveChatHistories();
 
     if (sender === currentChatTarget) {
+        // A delivered message is also definitive evidence that typing ended.
+        hideTypingIndicator();
         renderMessages();
     } else {
         // Increment notification counts if you are looking elsewhere
         unreadCounts[sender] = (unreadCounts[sender] || 0) + 1;
         
         // NEW: Save the updated unread badge counts to localStorage
-        localStorage.setItem('unread_counts', JSON.stringify(unreadCounts));
+        saveUnreadCounts();
         
         renderUserList(); 
     }

@@ -249,6 +249,9 @@ button.palette-dot.palette-wood { background: linear-gradient(135deg, #3d405b 50
     animation: pulseFade 1.2s infinite ease-in-out;
 }
 
+/* Override the display:block rule above when JavaScript hides the indicator. */
+.typing-indicator.hidden { display: none !important; }
+
 /* Adds a sleek breathing animation so typing status feels active */
 @keyframes pulseFade {
     0%, 100% { opacity: 0.6; }

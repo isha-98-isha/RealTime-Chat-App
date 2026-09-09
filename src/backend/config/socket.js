@@ -11,6 +11,7 @@ export const initSocket = (server) => {
     });
 
     io.on('connection', (socket) => {
+        socket.typingTargets = new Set();
         console.log(`🔌 New connection: ${socket.id}`);
 
         socket.on('register_user', (username) => {
@@ -41,6 +42,13 @@ export const initSocket = (server) => {
             socket.on('user_typing', (payload) => {
                 const { targetUsername, isTyping } = payload;
                 const targetSocketId = onlineUsers.get(targetUsername);
+
+                if (isTyping) {
+                    socket.typingTargets.add(targetUsername);
+                } else {
+                    socket.typingTargets.delete(targetUsername);
+                }
+
                 if (targetSocketId) {
                     io.to(targetSocketId).emit('user_typing_broadcast', {
                         sender: socket.username,
@@ -49,8 +57,35 @@ export const initSocket = (server) => {
                 }
             });
 
+        // Let a newly opened or reconnected chat restore a currently active
+        // typing state instead of waiting for the next keypress.
+        socket.on('typing_status_request', (payload) => {
+            const targetUsername = payload?.targetUsername;
+            const targetSocketId = onlineUsers.get(targetUsername);
+            const targetSocket = targetSocketId && io.sockets.sockets.get(targetSocketId);
+
+            if (targetSocket?.typingTargets.has(socket.username)) {
+                socket.emit('user_typing_broadcast', {
+                    sender: targetUsername,
+                    isTyping: true
+                });
+            }
+        });
 
         socket.on('disconnect', () => {
+            // A disconnected user cannot still be typing. Clear all recipients'
+            // indicators before removing this user from the online roster.
+            socket.typingTargets.forEach((targetUsername) => {
+                const targetSocketId = onlineUsers.get(targetUsername);
+                if (targetSocketId) {
+                    io.to(targetSocketId).emit('user_typing_broadcast', {
+                        sender: socket.username,
+                        isTyping: false
+                    });
+                }
+            });
+            socket.typingTargets.clear();
+
             // ONLY remove the user if their current socket matches the one stored
             if (socket.username && onlineUsers.get(socket.username) === socket.id) {
                 onlineUsers.delete(socket.username);
