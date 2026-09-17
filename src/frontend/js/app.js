@@ -184,6 +184,7 @@ function switchActiveChat(targetUser) {
     });
 
     renderMessages();
+    markMessagesAsRead(targetUser);
 }
 
 function stopTyping(targetUsername = typingTarget) {
@@ -258,11 +259,18 @@ messageForm.addEventListener('submit', (e) => {
 
     const roomKey = getRoomKey(myUsername, currentChatTarget);
     if (!chatHistories[roomKey]) chatHistories[roomKey] = [];
-    chatHistories[roomKey].push({ sender: myUsername, message, timestamp });
+    chatHistories[roomKey].push({
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        sender: myUsername,
+        message,
+        timestamp,
+        read: false
+    });
 
     saveChatHistories();
 
     socket.emit('private_message', {
+        id: chatHistories[roomKey][chatHistories[roomKey].length - 1].id,
         targetUsername: currentChatTarget,
         message: message
     });
@@ -273,11 +281,11 @@ messageForm.addEventListener('submit', (e) => {
 
 // Locate this block in your app.js and add the new localStorage line:
 socket.on('receive_message', (payload) => {
-    const { sender, message, timestamp } = payload;
+    const { id, sender, message, timestamp } = payload;
 
     const roomKey = getRoomKey(myUsername, sender);
     if (!chatHistories[roomKey]) chatHistories[roomKey] = [];
-    chatHistories[roomKey].push({ sender, message, timestamp });
+    chatHistories[roomKey].push({ id, sender, message, timestamp, read: false });
 
     saveChatHistories();
 
@@ -285,6 +293,7 @@ socket.on('receive_message', (payload) => {
         // A delivered message is also definitive evidence that typing ended.
         hideTypingIndicator();
         renderMessages();
+        markMessagesAsRead(sender);
     } else {
         // Increment notification counts if you are looking elsewhere
         unreadCounts[sender] = (unreadCounts[sender] || 0) + 1;
@@ -295,6 +304,42 @@ socket.on('receive_message', (payload) => {
         renderUserList(); 
     }
 });
+
+socket.on('messages_read', (payload) => {
+    const { messageIds } = payload || {};
+    if (!Array.isArray(messageIds) || !messageIds.length) return;
+
+    let changed = false;
+    Object.values(chatHistories).forEach(messages => {
+        messages.forEach(chat => {
+            if (messageIds.includes(chat.id) && chat.sender === myUsername && !chat.read) {
+                chat.read = true;
+                changed = true;
+            }
+        });
+    });
+
+    if (changed) {
+        saveChatHistories();
+        renderMessages();
+    }
+});
+
+function markMessagesAsRead(sender) {
+    const roomKey = getRoomKey(myUsername, sender);
+    const unreadMessageIds = (chatHistories[roomKey] || [])
+        .filter(chat => chat.sender === sender && chat.id && !chat.read)
+        .map(chat => chat.id);
+
+    if (!unreadMessageIds.length) return;
+
+    unreadMessageIds.forEach(messageId => {
+        const message = chatHistories[roomKey].find(chat => chat.id === messageId);
+        if (message) message.read = true;
+    });
+    saveChatHistories();
+    socket.emit('messages_read', { sender, messageIds: unreadMessageIds });
+}
 // --- Render Text Bubbles ---
 function renderMessages() {
     messagesDisplay.innerHTML = "";
@@ -308,7 +353,7 @@ function renderMessages() {
 
         bubble.innerHTML = `
             <div class="msg-text">${chat.message}</div>
-            <div class="msg-time">${chat.timestamp}</div>
+            <div class="msg-time">${chat.timestamp}${isMe ? `<span class="read-receipt ${chat.read ? 'is-read' : ''}" aria-label="${chat.read ? 'Read' : 'Sent'}">${chat.read ? '✓<span class="receipt-second">✓</span>' : '✓'}</span>` : ''}</div>
         `;
         messagesDisplay.appendChild(bubble);
     });

@@ -222,6 +222,9 @@ button.palette-dot.palette-wood { background: linear-gradient(135deg, #3d405b 50
 .msg-sent { background-color: var(--bubble-sent); color: white; align-self: flex-end; }
 .msg-received { background-color: var(--bubble-received); color: var(--bubble-received-text); border: 1px solid var(--bubble-received-border); align-self: flex-start; }
 .msg-time { font-size: 0.7rem; text-align: right; margin-top: 0.3rem; opacity: 0.7; }
+.read-receipt { margin-left: 0.35rem; font-size: 0.85rem; letter-spacing: 0; }
+.receipt-second { margin-left: -0.16em; }
+.read-receipt.is-read { color: #8fe3ff; }
 .message-form { padding: 1rem 1.5rem; background: var(--bg-card); border-top: 1px solid var(--bubble-received-border); display: flex; gap: 1rem; align-items: center; }
 .message-form input { flex-grow: 1; padding: 0.8rem 1rem; border: 1px solid var(--bubble-received-border); border-radius: 20px; outline: none; background: #fafafa; }
 .message-form button { width: 42px; height: 42px; background-color: var(--bubble-sent); border: none; border-radius: 50%; font-size: 1.15rem; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background 0.2s, transform 0.1s; flex-shrink: 0; }
