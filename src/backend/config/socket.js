@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import { randomUUID } from 'crypto';
 
 const globalRegisteredUsers = new Set();
 const activeOnlineSockets = new Map();
@@ -48,6 +49,7 @@ export const initSocket = (server) => {
         socket.on('private_message', (payload) => {
             const { targetUsername, message } = payload;
             const messagePayload = {
+                id: payload.id || randomUUID(),
                 sender: socket.username,
                 message: message,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -61,6 +63,18 @@ export const initSocket = (server) => {
                 pendingMessages.push(messagePayload);
                 offlineMessageQueues.set(targetUsername, pendingMessages);
             }
+        });
+
+        socket.on('messages_read', (payload) => {
+            const { sender, messageIds } = payload || {};
+            const senderSocketId = activeOnlineSockets.get(sender);
+
+            if (!senderSocketId || !Array.isArray(messageIds) || !messageIds.length) return;
+
+            io.to(senderSocketId).emit('messages_read', {
+                reader: socket.username,
+                messageIds
+            });
         });
 
         // Ensure this event listener is inside your backend socket.js file:
